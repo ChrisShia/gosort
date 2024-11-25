@@ -1,5 +1,54 @@
 package gosort
 
+//FIRST IMPLEMENTATION
+
+func MergeSortInPlace[T ordered](arr []T) {
+	length := len(arr)
+	if length <= 1 {
+		return
+	}
+	middle := len(arr) / 2
+	leftList := arr[:middle]
+	rightList := arr[middle:]
+	MergeSortInPlace[T](leftList)
+	MergeSortInPlace[T](rightList)
+	mergeOrderedContiguousSlicesWithTheSameUnderliningArray(leftList, rightList)
+	return
+}
+
+func mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T ordered](leftList, rightList []T) {
+	for len(leftList) > 0 && len(rightList) > 0 {
+		if leftList[0] > rightList[0] {
+			if len(rightList) > 1 {
+				rightList = rightList[1:]
+			} else {
+				rightList = rightList[len(rightList):]
+			}
+			leftList = leftList[:len(leftList)+1]
+			rotateRightOnce(leftList)
+		}
+		leftList = leftList[1:]
+	}
+	return
+}
+
+func rotateUsingAuxSlice(s []int, shift int) {
+	tmp := make([]int, 0)
+	length := len(s)
+	noOfElementsToBeRotated := length - shift
+	tmp = append(tmp, s[noOfElementsToBeRotated:]...)
+	tmp = append(tmp, s[:noOfElementsToBeRotated]...)
+	copy(s, tmp)
+}
+
+func rotateRightOnce[T any](s []T) {
+	v := s[len(s)-1]
+	copy(s[1:], s[0:len(s)-1])
+	s[0] = v
+}
+
+//SECOND IMPLEMENTATION
+
 func MergeSort[T ordered](arr []T) []T {
 	length := len(arr)
 	if length <= 1 {
@@ -38,56 +87,4 @@ func merge[T ordered](left, right []T) []T {
 		}
 	}
 	return merged
-}
-
-func MergeSortInPlace(arr []int) {
-	length := len(arr)
-	if length <= 1 {
-		return
-	}
-	middle := len(arr) / 2
-	leftList := arr[:middle]
-	rightList := arr[middle:]
-	MergeSortInPlace(leftList)
-	MergeSortInPlace(rightList)
-	mergeOrderedContiguousSlicesWithTheSameUnderliningArray(leftList, rightList)
-	return
-}
-
-func mergeOrderedContiguousSlicesWithTheSameUnderliningArray(leftList, rightList []int) {
-	for len(leftList) > 0 && len(rightList) > 0 {
-		if leftList[0] > rightList[0] {
-			if len(rightList) > 1 {
-				rightList = rightList[1:]
-			} else {
-				rightList = rightList[len(rightList):]
-			}
-			leftList = leftList[:len(leftList)+1]
-			rotateRightOnce(leftList)
-		}
-		leftList = leftList[1:]
-	}
-	return
-}
-
-type ordered interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr | ~float32 | ~float64 | ~string
-}
-
-func rotateUsingAuxSlice(s []int, shift int) {
-	tmp := make([]int, 0)
-	length := len(s)
-	noOfElementsToBeRotated := length - shift
-	tmp = append(tmp, s[noOfElementsToBeRotated:]...)
-	tmp = append(tmp, s[:noOfElementsToBeRotated]...)
-	copy(s, tmp)
-}
-
-func rotateRightOnce(s []int) {
-	if s == nil || len(s) == 0 {
-		return
-	}
-	v := s[len(s)-1]
-	copy(s[1:], s[0:len(s)-1])
-	s[0] = v
 }

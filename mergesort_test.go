@@ -129,7 +129,7 @@ func TestRotateOnce(t *testing.T) {
 	}
 }
 
-func TestMergeWithoutAuxSpace(t *testing.T) {
+func TestMergeWithoutAuxSpaceInts(t *testing.T) {
 	tests := []struct {
 		name string
 		arr  []int
@@ -148,7 +148,7 @@ func TestMergeWithoutAuxSpace(t *testing.T) {
 	}
 }
 
-func TestMergeSortInPlace(t *testing.T) {
+func TestMergeSortInPlaceInts(t *testing.T) {
 	tests := []struct {
 		name string
 		arr  []int
@@ -156,6 +156,24 @@ func TestMergeSortInPlace(t *testing.T) {
 	}{
 		{"", []int{1, 3, 4, 9, 2, 5, 7, 11}, []int{1, 2, 3, 4, 5, 7, 9, 11}},
 		{"", []int{1, 10, 15, 3, 100, 0, 7, 11, 90, 56}, []int{0, 1, 3, 7, 10, 11, 15, 56, 90, 100}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			MergeSortInPlace(tt.arr)
+			if !reflect.DeepEqual(tt.arr, tt.want) {
+				t.Errorf("Merge() = %v, want %v", tt.arr, tt.want)
+			}
+		})
+	}
+}
+
+func TestMargeSortInPlaceStrings(t *testing.T) {
+	tests := []struct {
+		name string
+		arr  []string
+		want []string
+	}{
+		{"", []string{"somestr", "anotherstr", "andyetanother"}, []string{"andyetanother", "anotherstr", "somestr"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
