@@ -16,6 +16,47 @@ func MergeSortInPlace[T ordered](arr []T) {
 	return
 }
 
+func MergeSortInPlaceParallel[T ordered](arr []T, done chan<- bool) {
+	length := len(arr)
+	if length <= 1 {
+		return
+	}
+	middle := len(arr) / 2
+	leftList := arr[:middle]
+	rightList := arr[middle:]
+	if length >= 10 && done != nil {
+		for d := range mergeSortInPlaceParallel[T](leftList, rightList) {
+			done <- d
+		}
+		close(done)
+		return
+	}
+	MergeSortInPlace[T](leftList)
+	MergeSortInPlace[T](rightList)
+	mergeOrderedContiguousSlicesWithTheSameUnderliningArray(leftList, rightList)
+	done <- true
+	close(done)
+	return
+}
+
+func mergeSortInPlaceParallel[T ordered](leftList, rightList []T) <-chan bool {
+	done := make(chan bool)
+	go func() {
+		doneLeft := make(chan bool)
+		doneRight := make(chan bool)
+		go MergeSortInPlaceParallel[T](leftList, doneLeft)
+		go MergeSortInPlaceParallel[T](rightList, doneRight)
+		//doneWithLeft := <-doneLeft
+		//doneWithRight := <-doneRight
+		if <-doneLeft && <-doneRight {
+			mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T](leftList, rightList)
+			done <- true
+			close(done)
+		}
+	}()
+	return done
+}
+
 func mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T ordered](leftList, rightList []T) {
 	for len(leftList) > 0 && len(rightList) > 0 {
 		if leftList[0] > rightList[0] {
@@ -49,14 +90,14 @@ func rotateRightOnce[T any](s []T) {
 
 //SECOND IMPLEMENTATION
 
-func MergeSort[T ordered](arr []T) []T {
+func MergeSortSimple[T ordered](arr []T) []T {
 	length := len(arr)
 	if length <= 1 {
 		return arr
 	}
 	middle := len(arr) / 2
-	sortedLeft1 := MergeSort[T](arr[:middle])
-	sortedRight2 := MergeSort[T](arr[middle:])
+	sortedLeft1 := MergeSortSimple[T](arr[:middle])
+	sortedRight2 := MergeSortSimple[T](arr[middle:])
 	return merge(sortedLeft1, sortedRight2)
 }
 

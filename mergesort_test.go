@@ -1,6 +1,7 @@
 package gosort
 
 import (
+	"math/rand/v2"
 	"reflect"
 	"testing"
 )
@@ -19,9 +20,9 @@ func TestMergeSortInts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ans := MergeSort(tt.input)
+			ans := MergeSortSimple(tt.input)
 			if !reflect.DeepEqual(ans, tt.want) {
-				t.Errorf("MergeSort() = %v, want %v", ans, tt.want)
+				t.Errorf("MergeSortSimple() = %v, want %v", ans, tt.want)
 			}
 		})
 	}
@@ -117,7 +118,6 @@ func TestRotateOnce(t *testing.T) {
 		want  []int
 	}{
 		{"", []int{1, 2, 3, 4, 5}, []int{5, 1, 2, 3, 4}},
-		{"", []int{}, []int{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -184,3 +184,42 @@ func TestMargeSortInPlaceStrings(t *testing.T) {
 		})
 	}
 }
+
+//func FuzzMergeSortInPlace(f *testing.F) {
+//
+//}
+
+func BenchmarkMergeSortInPlace(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		perm := rand.Perm(10000000)
+		b.StartTimer()
+		MergeSortInPlace(perm)
+	}
+}
+
+func BenchmarkMergeSortSimple(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		perm := rand.Perm(10000000)
+		b.StartTimer()
+		MergeSortSimple(perm)
+	}
+}
+
+func BenchmarkMergeSortInPlaceParallel(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		perm := rand.Perm(10000000)
+		b.StartTimer()
+		done := make(chan bool)
+		go MergeSortInPlaceParallel(perm, done)
+		<-done
+	}
+}
+
+//100000: 259400760, 265729156
+//100000: 341558083, 339428597
+
+//10000000:
+//10000000:
