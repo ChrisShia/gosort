@@ -187,20 +187,28 @@ func TestMargeSortInPlaceStrings(t *testing.T) {
 
 func BenchmarkRotateRightOnce(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		rotateRightOnceWithCopy([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+		rotateRightOnceWithCopy(intSlice(1000))
 	}
+}
+
+func intSlice(n int) []int {
+	s := make([]int, n)
+	for i := range s {
+		s[i] = i
+	}
+	return s
 }
 
 func BenchmarkRotateUsingAuxSlice(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		rotateUsingAuxSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 1)
+		rotateUsingAuxSlice(intSlice(1000), 1)
 	}
 }
 
 func BenchmarkMergeSortInPlace(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		perm := rand.Perm(100)
+		perm := rand.Perm(1000)
 		b.StartTimer()
 		MergeSortInPlace(perm)
 	}
@@ -209,7 +217,7 @@ func BenchmarkMergeSortInPlace(b *testing.B) {
 func BenchmarkMergeSortSimple(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		perm := rand.Perm(100)
+		perm := rand.Perm(1000)
 		b.StartTimer()
 		MergeSortSimple(perm)
 	}
