@@ -49,7 +49,7 @@ func TestMergeInts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ans := merge(tt.s1, tt.s2)
+			ans := mergeSimple(tt.s1, tt.s2)
 			if !reflect.DeepEqual(ans, tt.want) {
 				t.Errorf("Merge() = %v, want %v", ans, tt.want)
 			}
@@ -121,7 +121,7 @@ func TestRotateOnce(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rotateRightOnce(tt.input)
+			rotateRightOnceWithCopy(tt.input)
 			if !reflect.DeepEqual(tt.input, tt.want) {
 				t.Errorf("Merge() = %v, want %v", tt.input, tt.want)
 			}
@@ -185,14 +185,22 @@ func TestMargeSortInPlaceStrings(t *testing.T) {
 	}
 }
 
-//func FuzzMergeSortInPlace(f *testing.F) {
-//
-//}
+func BenchmarkRotateRightOnce(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		rotateRightOnceWithCopy([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	}
+}
+
+func BenchmarkRotateUsingAuxSlice(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		rotateUsingAuxSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 1)
+	}
+}
 
 func BenchmarkMergeSortInPlace(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		perm := rand.Perm(10000000)
+		perm := rand.Perm(100)
 		b.StartTimer()
 		MergeSortInPlace(perm)
 	}
@@ -201,7 +209,7 @@ func BenchmarkMergeSortInPlace(b *testing.B) {
 func BenchmarkMergeSortSimple(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		perm := rand.Perm(10000000)
+		perm := rand.Perm(100)
 		b.StartTimer()
 		MergeSortSimple(perm)
 	}
@@ -210,7 +218,7 @@ func BenchmarkMergeSortSimple(b *testing.B) {
 func BenchmarkMergeSortInPlaceParallel(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		perm := rand.Perm(10000000)
+		perm := rand.Perm(10)
 		b.StartTimer()
 		done := make(chan bool)
 		go MergeSortInPlaceParallel(perm, done)
@@ -218,8 +226,20 @@ func BenchmarkMergeSortInPlaceParallel(b *testing.B) {
 	}
 }
 
-//100000: 259400760, 265729156
-//100000: 341558083, 339428597
+func BenchmarkMergeOrderedContiguousSlicesWithTheSameUnderliningArray(b *testing.B) {
+	arr := []int{1, 2, 3, 6, 7, 9, 10, 14, 19, 4, 5, 8, 12, 16, 18, 20, 22}
+	s1 := arr[:9]
+	s2 := arr[9:]
+	for i := 0; i < b.N; i++ {
+		mergeOrderedContiguousSlicesWithTheSameUnderliningArray(s1, s2)
+	}
+}
 
-//10000000:
-//10000000:
+func BenchmarkMergeSimple(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		arr := []int{1, 2, 3, 6, 7, 9, 10, 14, 19, 4, 5, 8, 12, 16, 18, 20, 22}
+		s1 := arr[:9]
+		s2 := arr[9:]
+		mergeSimple(s1, s2)
+	}
+}

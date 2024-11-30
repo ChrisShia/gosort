@@ -16,47 +16,6 @@ func MergeSortInPlace[T ordered](arr []T) {
 	return
 }
 
-func MergeSortInPlaceParallel[T ordered](arr []T, done chan<- bool) {
-	length := len(arr)
-	if length <= 1 {
-		return
-	}
-	middle := len(arr) / 2
-	leftList := arr[:middle]
-	rightList := arr[middle:]
-	if length >= 10 && done != nil {
-		for d := range mergeSortInPlaceParallel[T](leftList, rightList) {
-			done <- d
-		}
-		close(done)
-		return
-	}
-	MergeSortInPlace[T](leftList)
-	MergeSortInPlace[T](rightList)
-	mergeOrderedContiguousSlicesWithTheSameUnderliningArray(leftList, rightList)
-	done <- true
-	close(done)
-	return
-}
-
-func mergeSortInPlaceParallel[T ordered](leftList, rightList []T) <-chan bool {
-	done := make(chan bool)
-	go func() {
-		doneLeft := make(chan bool)
-		doneRight := make(chan bool)
-		go MergeSortInPlaceParallel[T](leftList, doneLeft)
-		go MergeSortInPlaceParallel[T](rightList, doneRight)
-		//doneWithLeft := <-doneLeft
-		//doneWithRight := <-doneRight
-		if <-doneLeft && <-doneRight {
-			mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T](leftList, rightList)
-			done <- true
-			close(done)
-		}
-	}()
-	return done
-}
-
 func mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T ordered](leftList, rightList []T) {
 	for len(leftList) > 0 && len(rightList) > 0 {
 		if leftList[0] > rightList[0] {
@@ -66,7 +25,7 @@ func mergeOrderedContiguousSlicesWithTheSameUnderliningArray[T ordered](leftList
 				rightList = rightList[len(rightList):]
 			}
 			leftList = leftList[:len(leftList)+1]
-			rotateRightOnce(leftList)
+			rotateRightOnceWithCopy(leftList)
 		}
 		leftList = leftList[1:]
 	}
@@ -82,7 +41,7 @@ func rotateUsingAuxSlice(s []int, shift int) {
 	copy(s, tmp)
 }
 
-func rotateRightOnce[T any](s []T) {
+func rotateRightOnceWithCopy[T any](s []T) {
 	v := s[len(s)-1]
 	copy(s[1:], s[0:len(s)-1])
 	s[0] = v
@@ -98,10 +57,10 @@ func MergeSortSimple[T ordered](arr []T) []T {
 	middle := len(arr) / 2
 	sortedLeft1 := MergeSortSimple[T](arr[:middle])
 	sortedRight2 := MergeSortSimple[T](arr[middle:])
-	return merge(sortedLeft1, sortedRight2)
+	return mergeSimple(sortedLeft1, sortedRight2)
 }
 
-func merge[T ordered](left, right []T) []T {
+func mergeSimple[T ordered](left, right []T) []T {
 	merged := make([]T, len(left)+len(right))
 	i, j, m := 0, 0, 0
 	for i < len(left) && j < len(right) {
